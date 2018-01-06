@@ -1,41 +1,13 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-// Tell Mongoose to use the JS Promises (not any other 3rd-Party Promise Library like BlueBird)
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/TodoApp');
+const mongoose = require('./db/mongoose');
+const {Todo} = require('./models/Todo');
+const {User} = require('./models/User');
 
-const Todo = mongoose.model('Todo', {
-    text: {
-        type: String,
-        required: true,
-        trim: true,
-        minlength: 1
-    },
-    completed: {
-        type: Boolean,
-        default: false
-    },
-    completedAt: {
-        type: Number,
-        default: null
-    }
-});
+const app = express();
 
-const User = mongoose.model('User', {
-    email: {
-        type: String,
-        required: true,
-        trim: true,
-        minlength: 1
-    }
-});
-
-const user = new User({
-    email: 'abhicsmnnit@gmail.com'
-});
-
-user.save().then((doc) => {
-    console.log('User created', doc);
-}, (err) => {
-    console.log('Unable to create user', err);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
 });
