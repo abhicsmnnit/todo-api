@@ -20,3 +20,22 @@ const Todo = mongoose.model('Todo', {
         default: null
     }
 });
+
+const User = mongoose.model('User', {
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1
+    }
+});
+
+const user = new User({
+    email: 'abhicsmnnit@gmail.com'
+});
+
+user.save().then((doc) => {
+    console.log('User created', doc);
+}, (err) => {
+    console.log('Unable to create user', err);
+});
