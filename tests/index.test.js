@@ -1,5 +1,6 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('../index');
 const {Todo} = require('../models/Todo');
@@ -82,5 +83,36 @@ describe('GET /todos', () => {
                     done();
                 }).catch((err) => done(err));
             });
+    });
+});
+
+describe('GET /todos/:id', () => {
+    it('should return the todo', (done) => {
+        Todo.findOne().then((todo) => {
+            request(app)
+                .get(`/todos/${todo._id}`)
+                .expect(200)
+                .expect((res) => {
+                    // todo object returned from mongo has a lot of other properties as well apart from the one that we stored in todo
+                    // So we can check for mongo's todo object to contain what the API returned
+                    expect(todo).toContain(res.body.todo);
+                })
+                .end(done);
+        }).catch((err) => done(err));
+    });
+
+    it('should give 404 for non-object id', (done) => {
+        request(app)
+            .get('/todos/123')
+            .expect(404)
+            .end(done);
+    });
+
+    it('should give 404 for valid but non-existent id', (done) => {
+        const aValidID = new ObjectID().toHexString();
+        request(app)
+            .get(`/todos/${aValidID}`)
+            .expect(404)
+            .end(done);
     });
 });
