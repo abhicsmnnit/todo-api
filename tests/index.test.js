@@ -1,5 +1,6 @@
 const expect = require('expect');
 const request = require('supertest');
+const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 
 const {app} = require('../index');
@@ -123,21 +124,21 @@ describe('DELETE /todos/:id', () => {
             const deleteTodoId = todo._id.toHexString();
 
             request(app)
-            .delete(`/todos/${deleteTodoId}`)
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.todo._id).toBe(deleteTodoId);
-            })
-            .end((err, res) => {
-                if (err) {
-                    done(err);
-                }
- 
-                Todo.findById(deleteTodoId).then((todo) => {
-                    expect(todo).toBeFalsy();
-                    done();
-                }).catch((err) => done(err));
-            });
+                .delete(`/todos/${deleteTodoId}`)
+                .expect(200)
+                .expect((res) => {
+                    expect(res.body.todo._id).toBe(deleteTodoId);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    }
+
+                    Todo.findById(deleteTodoId).then((todo) => {
+                        expect(todo).toBeFalsy();
+                        done();
+                    }).catch((err) => done(err));
+                });
         }).catch((err) => done(err));
     });
 
@@ -153,6 +154,86 @@ describe('DELETE /todos/:id', () => {
         request(app)
             .delete(`/todos/${aValidID}`)
             .expect(404)
+            .end(done);
+    });
+});
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo', (done) => {
+        Todo.findOne().then((todo) => {
+            const updatedTodoId = todo._id.toHexString();
+
+            const text = `${todo.text}, plus do this too!`;
+            const completed = !todo.completed;
+            const updateThese = {text, completed};
+
+            request(app)
+                .patch(`/todos/${updatedTodoId}`)
+                .send(updateThese)
+                .expect(200)
+                .expect((res) => {
+                    expect(res.body.todo.text).toBe(text);
+                    expect(res.body.todo.completed).toBe(completed);
+                })
+                .end((err, res) => {
+                    if (err) {
+                        done(err);
+                    }
+
+                    Todo.findById(updatedTodoId).then((todo) => {
+                        expect(todo.text).toBe(text);
+                        expect(todo.completed).toBe(completed);
+                        done();
+                    }).catch(err => done(err));
+                });
+        }).catch(err => done(err));
+    });
+
+    it ('should not update a todo if an empty object is passed', (done) => {
+        Todo.findOne().then((todo) => {
+            request(app)
+            .patch(`/todos/${todo._id.toHexString()}`)
+            .send({})
+            .expect(200)
+            .expect((res) => {
+                expect(todo).toInclude(res.body.todo);
+            })
+            .end((err, res) => {
+                Todo.findById(todo._id.toHexString()).then((todo2) => {
+                    expect(todo).toEqual(todo2);
+                    done();
+                }).catch(err => done(err));
+            });
+        }).catch(err => done(err));
+    });
+
+    it('should return 404 for non-object id', (done) => {
+        request(app)
+            .patch('/todos/123')
+            .send({})
+            .expect(404)
+            .end(done);
+    });
+
+    it('should return 404 for non-existent id', (done) => {
+        const aValidID = new ObjectID().toHexString();
+        request(app)
+            .patch(`/todos/${aValidID}`)
+            .send({})
+            .expect(404)
+            .end(done);
+    });
+
+    it('should return 400 with proper errors if invalid fields are passed', (done) => {
+        const aValidID = new ObjectID().toHexString();
+        request(app)
+            .patch(`/todos/${aValidID}`)
+            .send({ text: '', completed: 123 })
+            .expect(400)
+            .expect((res) => {
+                expect(res.body).toContainKey('errors');
+                expect(res.body.errors).toContainKeys(['text', 'completed']);
+            })
             .end(done);
     });
 });
