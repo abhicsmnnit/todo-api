@@ -135,7 +135,7 @@ describe('DELETE /todos/:id', () => {
                     }
 
                     Todo.findById(deleteTodoId).then((todo) => {
-                        expect(todo).toBeFalsy();
+                        expect(todo).toNotExist();
                         done();
                     }).catch((err) => done(err));
                 });
@@ -213,14 +213,14 @@ describe('PATCH /todos/:id', () => {
 
     it('should clear off `completedAt` property if a todo is marked not completed', (done) => {
         Todo.findOne({ completed: true }).then((todo) => {
-            expect(todo.completedAt).toBeTruthy();
+            expect(todo.completedAt).toBeA('number');
 
             request(app)
                 .patch(`/todos/${todo._id.toHexString()}`)
                 .send({ completed: false })
                 .expect(200)
                 .expect((res) => {
-                    expect(res.body.todo.completedAt).toBeFalsy();
+                    expect(res.body.todo.completedAt).toNotExist();
                 })
                 .end((err, res) => {
                     if (err) {
@@ -228,7 +228,7 @@ describe('PATCH /todos/:id', () => {
                     }
 
                     Todo.findById(todo._id.toHexString()).then((todo2) => {
-                        expect(todo2.completedAt).toBeFalsy();
+                        expect(todo2.completedAt).toNotExist();
                         done();
                     }).catch(err => done(err));
                 });
@@ -237,14 +237,14 @@ describe('PATCH /todos/:id', () => {
 
     it('should set `completedAt` property if a todo is marked completed', (done) => {
         Todo.findOne({ completed: false }).then((todo) => {
-            expect(todo.completedAt).toBeFalsy();
+            expect(todo.completedAt).toNotExist();
 
             request(app)
                 .patch(`/todos/${todo._id.toHexString()}`)
                 .send({ completed: true })
                 .expect(200)
                 .expect((res) => {
-                    expect(res.body.todo.completedAt).toBeTruthy();
+                    expect(res.body.todo.completedAt).toBeA('number');
                 })
                 .end((err, res) => {
                     if (err) {
@@ -252,7 +252,7 @@ describe('PATCH /todos/:id', () => {
                     }
 
                     Todo.findById(todo._id.toHexString()).then((todo2) => {
-                        expect(todo2.completedAt).toBeTruthy();
+                        expect(todo2.completedAt).toBeA('number');
                         done();
                     }).catch(err => done(err));
                 });
