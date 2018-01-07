@@ -1,3 +1,5 @@
+require('./config/config');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
@@ -101,7 +103,7 @@ const validate = (body) => {
 
 const isValidText = (text) => _.isString(text) && text.trim().length > 0;
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
