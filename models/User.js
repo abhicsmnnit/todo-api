@@ -60,7 +60,6 @@ UserSchema.statics.findByToken = function (token) {
     try {
         decoded = jwt.verify(token, 'tatasalt');
     } catch (err) {
-        console.log('JWT ERROR!', err);
         return Promise.reject();
     }
 
