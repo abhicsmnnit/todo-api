@@ -2,12 +2,12 @@ require('./config/config');
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const {ObjectID} = require('mongodb');
+const { ObjectID } = require('mongodb');
 const _ = require('lodash');
 
 const mongoose = require('./db/mongoose');
-const {Todo} = require('./models/Todo');
-const { User} = require('./models/User');
+const { Todo } = require('./models/Todo');
+const { User } = require('./models/User');
 
 const app = express();
 
@@ -111,6 +111,14 @@ app.post('/users', (req, res) => {
         .then(savedUser => savedUser.generateAuthToken())
         .then(token => res.header('x-auth-token', token).send({ user }))
         .catch(err => res.status(404).send(err));
+});
+
+app.get('/users/me', (req, res) => {
+    var token = req.header('x-auth-token');
+
+    User.findByToken(token).then((user) => {
+        res.send(user);
+    }).catch(err => res.status(401).send());
 });
 
 const port = process.env.PORT;

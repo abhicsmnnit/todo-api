@@ -52,6 +52,24 @@ UserSchema.methods.generateAuthToken = function () {
     });
 };
 
+UserSchema.statics.findByToken = function (token) {
+    const User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'tatasalt');
+    } catch (err) {
+        console.log('JWT ERROR!', err);
+        return Promise.reject();
+    }
+
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+};
+
 const User = mongoose.model('User', UserSchema);
 
 module.exports = { User };
