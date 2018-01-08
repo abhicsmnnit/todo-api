@@ -7,7 +7,7 @@ const _ = require('lodash');
 
 const mongoose = require('./db/mongoose');
 const {Todo} = require('./models/Todo');
-const {User} = require('./models/User');
+const { User} = require('./models/User');
 
 const app = express();
 
@@ -103,9 +103,19 @@ const validate = (body) => {
 
 const isValidText = (text) => _.isString(text) && text.trim().length > 0;
 
+app.post('/users', (req, res) => {
+    const userDetails = _.pick(req.body, ['email', 'password']);
+    const user = new User(userDetails);
+
+    user.save()
+        .then(savedUser => savedUser.generateAuthToken())
+        .then(token => res.header('x-auth-token', token).send({ user }))
+        .catch(err => res.status(404).send(err));
+});
+
 const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
 
-module.exports = {app};
+module.exports = { app };
