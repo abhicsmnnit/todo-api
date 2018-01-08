@@ -117,6 +117,9 @@ app.get('/users/me', (req, res) => {
     var token = req.header('x-auth-token');
 
     User.findByToken(token).then((user) => {
+        if (!user) {
+            return Promise.reject();
+        }
         res.send(user);
     }).catch(err => res.status(401).send());
 });
