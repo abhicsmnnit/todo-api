@@ -3,10 +3,13 @@ require('../config/config');
 const expect = require('expect');
 const request = require('supertest');
 const _ = require('lodash');
-const {ObjectID} = require('mongodb');
+const { ObjectID } = require('mongodb');
 
-const {app} = require('../index');
-const {Todo} = require('../models/Todo');
+const { app } = require('../index');
+const { Todo } = require('../models/Todo');
+const { users, populateTestUsers } = require('./seed');
+
+beforeEach(populateTestUsers);
 
 describe('POST /todos', () => {
     it('should successfully add todo for a valid input', (done) => {
