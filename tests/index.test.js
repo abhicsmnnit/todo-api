@@ -7,6 +7,7 @@ const { ObjectID } = require('mongodb');
 
 const { app } = require('../index');
 const { Todo } = require('../models/Todo');
+const { User } = require('../models/User');
 const { users, populateTestUsers } = require('./seed');
 
 beforeEach(populateTestUsers);
@@ -312,6 +313,48 @@ describe('GET /users/me', () => {
         request(app)
             .get('/users/me')
             .expect(401)
+            .end(done);
+    });
+});
+
+describe('POST /users', () => {
+    it('should create user', (done) => {
+        const email = 'test@example.com';
+        const password = 'qwerty';
+        request(app)
+            .post('/users')
+            .send({ email, password })
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers['x-auth-token']).toExist();
+                expect(res.body.user._id).toExist();
+                expect(res.body.user.email).toBe(email);
+            })
+            .end((err, res) => {
+                if(err) {
+                    done(err);
+                }
+                User.findById(res.body.user._id).then((user) => {
+                    expect(user).toExist();
+                    expect(user.password).toNotBe(password);
+                    done();
+                }).catch(err => done(err));
+            });
+    });
+
+    it('should return 400 for invalid request', (done) => {
+        request(app)
+            .post('/users')
+            .send({ email: '123', password: 'qwedsa' })
+            .expect(400)
+            .end(done);
+    });
+
+    it ('should return 400 if email already exists', (done) => {
+        request(app)
+            .post('/users')
+            .send({email: users[0].email, password: 'asdfgh'})
+            .expect(400)
             .end(done);
     });
 });
