@@ -395,3 +395,31 @@ describe('POST /users/login', () => {
             .end(done);
     });
 });
+
+describe('DELETE /users/me/token', () => {
+    it('should delete a token if user logged-in', (done) => {
+        request(app)
+            .delete('/users/me/token')
+            .set('x-auth-token', users[0].tokens[0].token)
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    done(err);
+                }
+                User.findById(users[0]._id).then((user) => {
+                    if (!user) {
+                        done(err);
+                    }
+                    expect(user.tokens.length).toBe(0);
+                    done();
+                }).catch(err => done(err));
+            });
+    });
+
+    it('should return 401 if not authenticated', (done) => {
+        request(app)
+            .delete('/users/me/token')
+            .expect(401)
+            .end(done);
+    });
+});
