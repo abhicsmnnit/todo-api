@@ -53,13 +53,16 @@ app.get('/todos/:id', authenticate, (req, res) => {
     }).catch(err => res.status(400).send());
 });
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     const todoId = req.params.id;
     if (!ObjectID.isValid(todoId)) {
         res.status(404).send();
     }
 
-    Todo.findByIdAndRemove(todoId).then((todo) => {
+    Todo.findOneAndRemove({
+        _id: todoId,
+        _creator: req.user._id
+    }).then((todo) => {
         if (!todo) {
             return res.status(404).send();
         }

@@ -136,31 +136,37 @@ describe('GET /todos/:id', () => {
 
 describe('DELETE /todos/:id', () => {
     it('should delete todo', (done) => {
-        Todo.findOne().then((todo) => {
-            const deleteTodoId = todo._id.toHexString();
+        request(app)
+            .delete(`/todos/${todos[0]._id.toHexString()}`)
+            .set('x-auth-token', users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo._id).toBe(todos[0]._id.toHexString());
+            })
+            .end((err, res) => {
+                if (err) {
+                    done(err);
+                }
 
-            request(app)
-                .delete(`/todos/${deleteTodoId}`)
-                .expect(200)
-                .expect((res) => {
-                    expect(res.body.todo._id).toBe(deleteTodoId);
-                })
-                .end((err, res) => {
-                    if (err) {
-                        done(err);
-                    }
+                Todo.findById(todos[0]._id.toHexString()).then((todo) => {
+                    expect(todo).toNotExist();
+                    done();
+                }).catch((err) => done(err));
+            });
+    });
 
-                    Todo.findById(deleteTodoId).then((todo) => {
-                        expect(todo).toNotExist();
-                        done();
-                    }).catch((err) => done(err));
-                });
-        }).catch((err) => done(err));
+    it('should not delete todo of another user', (done) => {
+        request(app)
+            .delete(`/todos/${todos[1]._id.toHexString()}`)
+            .set('x-auth-token', users[0].tokens[0].token)
+            .expect(404)
+            .end(done);
     });
 
     it('should return 404 for non-object id', (done) => {
         request(app)
             .delete('/todos/123')
+            .set('x-auth-token', users[0].tokens[0].token)
             .expect(404)
             .end(done);
     });
@@ -169,6 +175,7 @@ describe('DELETE /todos/:id', () => {
         const aValidID = new ObjectID().toHexString();
         request(app)
             .delete(`/todos/${aValidID}`)
+            .set('x-auth-token', users[0].tokens[0].token)
             .expect(404)
             .end(done);
     });
