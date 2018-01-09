@@ -128,6 +128,14 @@ app.post('/users/login', (req, res) => {
         .catch(err => res.status(400).send());
 });
 
+app.delete('/users/me/token', authenticate, (req, res) => {
+    const user = req.user;
+
+    user.removeToken(req.token)
+        .then(() => res.send())
+        .catch(err => res.status(400).send());
+});
+
 const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
