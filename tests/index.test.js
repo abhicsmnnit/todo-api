@@ -98,22 +98,28 @@ describe('GET /todos', () => {
 
 describe('GET /todos/:id', () => {
     it('should return the todo', (done) => {
-        Todo.findOne().then((todo) => {
-            request(app)
-                .get(`/todos/${todo._id}`)
-                .expect(200)
-                .expect((res) => {
-                    // todo object returned from mongo has a lot of other properties as well apart from the one that we stored in todo
-                    // So we can check for mongo's todo object to contain what the API returned
-                    expect(todo).toContain(res.body.todo);
-                })
-                .end(done);
-        }).catch((err) => done(err));
+        request(app)
+            .get(`/todos/${todos[0]._id.toHexString()}`)
+            .set('x-auth-token', users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo._id).toBe(todos[0]._id.toHexString());
+            })
+            .end(done);
+    });
+
+    it('should not return todo of another user', (done) => {
+        request(app)
+            .get(`/todos/${todos[1]._id.toHexString()}`)
+            .set('x-auth-token', users[0].tokens[0].token)
+            .expect(404)
+            .end(done);
     });
 
     it('should give 404 for non-object id', (done) => {
         request(app)
             .get('/todos/123')
+            .set('x-auth-token', users[0].tokens[0].token)
             .expect(404)
             .end(done);
     });
@@ -122,6 +128,7 @@ describe('GET /todos/:id', () => {
         const aValidID = new ObjectID().toHexString();
         request(app)
             .get(`/todos/${aValidID}`)
+            .set('x-auth-token', users[0].tokens[0].token)
             .expect(404)
             .end(done);
     });
