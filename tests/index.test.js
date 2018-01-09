@@ -81,19 +81,17 @@ describe('POST /todos', () => {
 });
 
 describe('GET /todos', () => {
-    it('should return all the todos', (done) => {
+    it('should return all the todos of the authenticated', (done) => {
         request(app)
             .get('/todos')
+            .set('x-auth-token', users[0].tokens[0].token)
             .expect(200)
             .end((err, res) => {
                 if (err) {
                     return done(err);
                 }
-
-                Todo.find().then((todos) => {
-                    expect(todos.length).toBe(res.body.todos.length);
-                    done();
-                }).catch((err) => done(err));
+                expect(res.body.todos.length).toBe(1);
+                done();
             });
     });
 });

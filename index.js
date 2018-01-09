@@ -27,12 +27,13 @@ app.post('/todos', authenticate, (req, res) => {
     });
 });
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos) => {
-        res.send({ todos });
-    }, (err) => {
-        res.status(400).send(err);
-    });
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({ _creator: req.user._id })
+        .then((todos) => {
+            res.send({ todos });
+        }, (err) => {
+            res.status(400).send(err);
+        });
 });
 
 app.get('/todos/:id', (req, res) => {
