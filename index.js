@@ -70,7 +70,7 @@ app.delete('/todos/:id', authenticate, (req, res) => {
     }).catch((err) => res.status(400).send());
 });
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     const updatedTodoId = req.params.id;
     if (!ObjectID.isValid(updatedTodoId)) {
         return res.status(404).send();
@@ -88,7 +88,10 @@ app.patch('/todos/:id', (req, res) => {
         body.completedAt = Math.floor(Date.now() / 1000);
     }
 
-    Todo.findByIdAndUpdate(updatedTodoId, { $set: body }, { new: true })
+    Todo.findOneAndUpdate({
+        _id: updatedTodoId,
+        _creator: req.user._id
+    }, { $set: body }, { new: true })
         .then((todo) => {
             if (!todo) {
                 res.status(404).send();
