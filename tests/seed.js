@@ -13,7 +13,7 @@ const users = [{
     password: 'qwedsa',
     tokens: [{
         access: 'auth',
-        token: jwt.sign({ _id: user1ID.toHexString(), access: 'auth' }, 'tatasalt')
+        token: jwt.sign({ _id: user1ID.toHexString(), access: 'auth' }, process.env.JWT_SECRET)
     }]
 }, {
     _id: user2ID,
@@ -21,7 +21,7 @@ const users = [{
     password: 'qwerty',
     tokens: [{
         access: 'auth',
-        token: jwt.sign({ _id: user2ID.toHexString(), access: 'auth' }, 'tatasalt')
+        token: jwt.sign({ _id: user2ID.toHexString(), access: 'auth' }, process.env.JWT_SECRET)
     }]
 }];
 

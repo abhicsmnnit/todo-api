@@ -7,3 +7,6 @@ jsconfig.json
 
 # Server Logs
 logs/
+
+# Config File
+config/config.json
