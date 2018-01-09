@@ -350,10 +350,47 @@ describe('POST /users', () => {
             .end(done);
     });
 
-    it ('should return 400 if email already exists', (done) => {
+    it('should return 400 if email already exists', (done) => {
         request(app)
             .post('/users')
-            .send({email: users[0].email, password: 'asdfgh'})
+            .send({ email: users[0].email, password: 'asdfgh' })
+            .expect(400)
+            .end(done);
+    });
+});
+
+describe('POST /users/login', () => {
+    it('should return user with token in header', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({ email: users[0].email, password: users[0].password })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.user.email).toBe(users[0].email);
+                expect(res.body.user._id).toBe(users[0]._id.toHexString());
+                expect(res.headers['x-auth-token']).toExist();
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                User.findById(users[0]._id).then((user) => {
+                    if (!user) {
+                        return done(err);
+                    }
+                    expect(user.tokens[1]).toInclude({
+                        access: 'auth',
+                        token: res.headers['x-auth-token']
+                    });
+                    done();
+                }).catch(err => done(err));
+            });
+    });
+
+    it('should return 400 if user does not exist', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({ email: 'notauser@example.com', password: 'doesntmatter' })
             .expect(400)
             .end(done);
     });
